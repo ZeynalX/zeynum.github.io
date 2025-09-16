@@ -3,434 +3,451 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sayı Analiz Platformu (Düzeltilmiş Sürüm)</title>
+    <title>Sayı Macerası (Final Sürüm)</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --bg-color: #f4f7fc; --card-bg: #ffffff; --primary: #6a6ff2; --primary-dark: #4a4e9f; --secondary: #f5a623; --accent-green: #2ecc71; --accent-blue: #3498db; --accent-red: #e74c3c; --accent-purple: #9b59b6; --text-color: #34495e; --shadow-light: rgba(106, 111, 242, 0.2); --border-color: #e0e5f0;
-            --binler-boluk-bg: rgba(245, 166, 35, 0.1);
-            --birler-boluk-bg: rgba(106, 111, 242, 0.1);
-            --header-bg: #f8f9fa;
+            --primary: #6c5ce7; --primary-dark: #4834d4; --secondary: #00cec9; --accent: #fd79a8; --bg-light: #f7f8fa; --bg-dark: #dfe6e9; --text-dark: #2d3436; --text-light: #636e72; --white: #ffffff; --border-color: #e0e6ed; --shadow: 0 10px 30px rgba(0, 0, 0, 0.07); --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --binler-boluk-bg: rgba(253, 121, 168, 0.1); --birler-boluk-bg: rgba(0, 206, 201, 0.1);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        html { font-size: 16px; scroll-behavior: smooth; }
-        body { 
-            font-family: 'Baloo 2', sans-serif; 
-            background-color: var(--bg-color);
-            color: var(--text-color); 
-            padding: 1rem; 
-            display: flex; 
-            justify-content: center; 
-            align-items: flex-start; 
-            min-height: 100vh; 
-        }
+        html { font-size: 16px; }
+        body { font-family: 'Baloo 2', sans-serif; background-color: var(--bg-light); color: var(--text-dark); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; padding: 1rem; }
+        .app-shell { width: 100%; max-width: 800px; background: var(--white); border-radius: 24px; box-shadow: var(--shadow); padding: 1.5rem; border: 1px solid var(--border-color); }
+        header h1 { display: flex; align-items: center; justify-content: center; gap: 0.75rem; text-align: center; color: var(--primary); font-size: clamp(1.8rem, 5vw, 2.5rem); font-weight: 800; margin-bottom: 1.5rem; background: linear-gradient(45deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        header h1 svg { width: 1em; height: 1em; }
+        
+        /* Ana Sayı Ekranı */
+        .number-explorer { background: var(--bg-light); border-radius: 16px; padding: 1rem; }
+        .number-explorer.hide-block-names .block-name,
+        .number-explorer.hide-place-names .place-name { display: none; }
+        .hero-number-container { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.5rem; }
+        .block-name { grid-column: span 3; text-align: center; font-weight: 700; padding: 0.5rem; border-radius: 8px 8px 0 0; margin-bottom: -0.5rem; position: relative; z-index: 1; transition: opacity 0.3s ease; }
+        .block-name.thousands { background-color: var(--binler-boluk-bg); color: var(--accent); }
+        .block-name.ones { background-color: var(--birler-boluk-bg); color: var(--secondary); }
+        .hero-number-display { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.5rem; }
+        .digit-wrapper { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+        .digit-main { font-size: clamp(2rem, 8vw, 2.8rem); font-weight: 800; width: 100%; aspect-ratio: 1/1.2; display: flex; align-items: center; justify-content: center; background-color: var(--white); border-radius: 12px; border-bottom: 4px solid var(--border-color); cursor: pointer; transition: all 0.2s ease; user-select: none; color: var(--primary-dark); }
+        .digit-main.hidden { font-size: 2.5rem; color: var(--accent); }
+        .digit-main.selected { border-color: var(--accent); transform: translateY(-4px); box-shadow: 0 8px 15px rgba(253, 121, 168, 0.3); }
+        .digit-main:active { transform: translateY(1px); border-bottom-width: 2px; }
+        .place-name { font-size: clamp(0.6rem, 2vw, 0.75rem); font-weight: 600; color: var(--text-light); text-align: center; transition: opacity 0.3s ease; margin-top: 0.25rem; }
+        .change-btn { background-color: var(--bg-dark); border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 1.5rem; font-weight: 700; color: var(--text-light); cursor: pointer; transition: all 0.2s ease; }
+        .change-btn:hover { background-color: var(--primary); color: var(--white); }
 
-        @media (max-width: 991px) {
-            body {
-                background-color: #ffffff;
-                padding: 0.5rem;
-            }
-        }
+        /* Seçili Rakam Bilgi Paneli */
+        .digit-info-panel { position: relative; background: var(--white); border-radius: 12px; padding: 1rem; margin-top: 1rem; transition: all 0.4s ease-in-out; max-height: 0; opacity: 0; overflow: hidden; border: 1px solid var(--border-color); }
+        .digit-info-panel.visible { max-height: 300px; opacity: 1; padding-top: 2rem; }
+        .panel-toggle-btn { position: absolute; top: 8px; right: 8px; background: none; border: none; font-size: 1.5rem; color: var(--text-light); cursor: pointer; opacity: 0.7; transition: all 0.2s ease; }
+        .panel-toggle-btn:hover { opacity: 1; transform: scale(1.2); }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .info-item { text-align: center; }
+        .info-item .label { font-size: 0.9rem; color: var(--text-light); }
+        .info-item .value { font-size: 1.5rem; font-weight: 700; color: var(--primary-dark); }
+        .info-item .value.place-value { color: var(--accent); }
 
-        .container { width: 100%; max-width: 1200px; background: var(--card-bg); border-radius: 1.5rem; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08); padding: 1.25rem; display: grid; grid-template-columns: 1fr; gap: 1.25rem; }
-        
-        .container.hide-block-names .block-label,
-        .container.hide-place-names .place-name { opacity: 0; height: 0; margin: 0; overflow: hidden; transform: translateY(-10px); pointer-events: none; }
+        /* Sekme (Tab) Yapısı */
+        .tab-controls { display: flex; justify-content: center; gap: 0.5rem; margin-top: 2rem; flex-wrap: wrap; }
+        .tab-btn { padding: 0.75rem 1rem; border: none; background-color: var(--bg-dark); color: var(--text-light); font-family: 'Baloo 2', sans-serif; font-size: 0.9rem; font-weight: 600; border-radius: 12px; cursor: pointer; transition: all 0.2s ease; }
+        .tab-btn.active { background: linear-gradient(45deg, var(--primary), var(--secondary)); color: var(--white); box-shadow: 0 4px 10px rgba(108, 92, 231, 0.4); }
+        .tab-content { margin-top: 1rem; }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        @media (min-width: 992px) { .container { grid-template-columns: minmax(0, 1.8fr) minmax(0, 1.2fr); } }
-        .main-content { display: flex; flex-direction: column; gap: 1rem; }
-        header h1 { text-align: center; color: var(--primary); font-weight: 800; font-size: clamp(1.8rem, 5vw, 2.2rem); line-height: 1.2; }
-        
-        .blocks-container { 
-            display: grid; 
-            grid-template-columns: 1fr;
-            gap: 1rem; 
-        }
-        @media (min-width: 576px) {
-            .blocks-container {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-        
-        .number-block { border: 1px solid var(--border-color); border-radius: 1rem; padding: 0.75rem; transition: background-color 0.3s ease; }
-        #binler-block { background-color: var(--binler-boluk-bg); }
-        #birler-block { background-color: var(--birler-boluk-bg); }
-        
-        .block-label { text-align: center; font-size: 1.1rem; color: var(--primary); font-weight: 700; margin-bottom: 0.5rem; transition: all 0.3s ease; }
-        .digit-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
-        .digit-container { text-align: center; position: relative; }
-        .digit-card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 0.75rem; padding: 0.5rem; display: flex; flex-direction: column; align-items: center; justify-content: space-between; box-shadow: inset 0 2px 4px rgba(0,0,0,0.04); transition: all 0.2s ease-out; cursor: pointer; min-height: 130px; position: relative; }
-        .digit-card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px var(--shadow-light); }
-        .digit-card.selected { border: 2px solid var(--primary); box-shadow: 0 0 0 3px var(--shadow-light); }
-        .digit-card .digit, .digit-card .app-change-btn { transition: opacity 0.3s ease; }
-        .digit-card.hidden .digit, .digit-card.hidden .app-change-btn { opacity: 0; pointer-events: none; }
-        .digit-card.hidden::after { content: '?'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 3.5rem; font-weight: 800; color: var(--secondary); text-shadow: 2px 2px 5px rgba(0,0,0,0.2); }
-        .digit-card .digit { font-weight: 800; color: var(--primary-dark); text-shadow: 2px 2px 0px rgba(255, 255, 255, 0.8), 3px 3px 0px var(--border-color); font-size: clamp(2.5rem, 10vw, 3.5rem); }
-        .place-name { margin-top: 0.5rem; font-weight: 700; color: var(--primary-dark); font-size: 0.8rem; transition: all 0.3s ease-out; }
-        
-        @media (max-width: 767px) {
-            .digit-card { min-height: 110px; padding: 0.4rem; }
-            .digit-card .digit { font-size: 2.2rem; }
-            .app-change-btn { width: 30px; height: 30px; font-size: 1.5rem; }
-            .digit-grid { gap: 0.3rem; }
-            .place-name { font-size: 0.75rem; margin-top: 0.3rem; }
-        }
+        /* Akordiyon Menü */
+        details { background: var(--bg-light); border-radius: 12px; margin-bottom: 0.5rem; border: 1px solid var(--border-color); }
+        summary { padding: 1rem; font-weight: 600; cursor: pointer; list-style: none; }
+        summary::-webkit-details-marker { display: none; }
+        .accordion-content { padding: 0 1rem 1rem 1rem; font-size: 1.1rem; font-weight: 600; color: var(--primary-dark); word-break: break-word; }
+        #readout-syllables { font-size: 0.9rem; color: var(--text-light); font-style: italic; margin-top: 0.5rem; }
 
-        .controls, .manual-entry { display: flex; justify-content: center; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
-        .control-btn { color: white; border: none; border-radius: 0.75rem; padding: 0.6rem 1rem; font-size: 1rem; font-family: 'Baloo 2', cursive; font-weight: 700; cursor: pointer; transition: all 0.2s ease-out; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 0 0 rgba(0,0,0,0.15); }
-        .control-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 0 0 rgba(0,0,0,0.15); } .control-btn:active { transform: translateY(1px); box-shadow: 0 2px 0 0 rgba(0,0,0,0.15); }
-        .control-btn.random { background: linear-gradient(45deg, var(--primary), #8185ff); } .control-btn.swap { background: linear-gradient(45deg, var(--accent-purple), #c377d1); } .control-btn.stair { background: linear-gradient(45deg, var(--accent-green), #59e095); } .control-btn.analyze { background: linear-gradient(45deg, var(--accent-blue), #5dade2); } .control-btn.reset { background: linear-gradient(45deg, var(--accent-red), #f17a6c); }
-        .manual-entry input { padding: 0.6rem; font-size: 1.1rem; font-family: 'Baloo 2', cursive; border-radius: 0.6rem; border: 2px solid var(--border-color); width: 100%; max-width: 250px; text-align: center; transition: all 0.2s; }
-        .manual-entry input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--shadow-light); outline: none; }
-        .app-change-btn { background: var(--bg-color); border: 1px solid var(--border-color); color: var(--primary); width: 36px; height: 36px; border-radius: 50%; font-size: 1.8rem; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; line-height: 1; user-select: none; }
-        .app-change-btn:hover { background-color: var(--primary); color: white; transform: scale(1.1); }
+        /* Araçlar ve Ayarlar Sekmesi */
+        .tools-section { margin-bottom: 1.5rem; }
+        .tools-section h3 { font-size: 1.2rem; color: var(--primary-dark); margin-bottom: 0.75rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; }
+        .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; }
+        .tool-btn { padding: 1rem; font-family: 'Baloo 2', sans-serif; font-size: 1rem; font-weight: 700; border-radius: 12px; border: none; cursor: pointer; transition: all 0.2s ease; box-shadow: var(--shadow-sm); }
+        .tool-btn:hover { transform: translateY(-3px); }
+        .tool-btn.random { background-color: var(--primary); color: var(--white); }
+        .tool-btn.swap { background-color: var(--accent); color: var(--white); }
+        .tool-btn.reset { background-color: var(--bg-dark); color: var(--text-dark); }
+        .view-options { display: flex; flex-direction: column; gap: 0.75rem; }
+        .view-options label { display: flex; align-items: center; gap: 0.5rem; font-weight: 600; cursor: pointer; }
+        .view-options input { accent-color: var(--primary); width: 18px; height: 18px; }
+        .digit-input-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.5rem; }
+        .digit-input-grid .input-wrapper { text-align: center; }
+        .digit-input-grid label { font-size: 0.7rem; font-weight: 600; color: var(--text-light); }
+        .digit-input-grid input { width: 100%; text-align: center; font-family: 'Baloo 2', sans-serif; font-size: 1.5rem; font-weight: 700; border: 1px solid var(--border-color); border-radius: 8px; padding: 0.5rem 0.25rem; }
+        .digit-input-grid input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2); }
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
 
-        .info-panel { background-color: #eef7ff; border: 2px solid var(--primary); border-radius: 1.5rem; padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
-        .info-box { background-color: white; padding: 1.5rem; border-radius: 1rem; box-shadow: 0 6px 15px rgba(0,0,0,0.08); transition: all 0.35s ease; overflow: hidden; }
-        .info-panel.hide-selection-panel #selected-digit-info { opacity: 0; height: 0; padding: 0 1.5rem; margin-bottom: -1.5rem; border: none; pointer-events: none; }
-        .info-box h3 { margin-bottom: 0.8rem; color: var(--primary-dark); font-size: 1.3rem; border-bottom: 2px solid var(--primary); padding-bottom: 0.5rem; }
-        #full-number-display { font-size: clamp(2.5rem, 8vw, 3rem); font-weight: 800; text-align: center; color: var(--secondary); word-break: break-all; letter-spacing: 2px; }
-        .selection-line { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; font-size: 1.1rem; border-bottom: 1px solid var(--border-color); }
-        .selection-line:last-child { border-bottom: none; } .selection-line span { color: var(--text-color); } .selection-line strong { color: var(--primary-dark); font-size: 1.2rem; padding: 0.25rem 0.5rem; background-color: #f4f7fc; border-radius: 6px; }
-        .options-list { list-style: none; padding-left: 0; } .options-list li { margin-bottom: 0.5rem; display: flex; align-items: center; } .options-list input[type="checkbox"] { margin-right: 0.5rem; width: 20px; height: 20px; accent-color: var(--primary); cursor: pointer; } .options-list label { cursor: pointer; user-select: none; }
-        .info-result { margin-top: 1rem; padding: 1rem; background-color: #f0f3f8; border-radius: 0.75rem; font-weight: 700; display: none; word-wrap: break-word; font-size: 1.1rem; }
-        #readout-section { display: none; } #number-text, #number-syllables { margin-bottom: 0.5rem; font-size: 1.1rem; } #number-syllables { color: #555; font-style: italic; font-size: 1rem; }
-        #speak-btn { background: linear-gradient(45deg, var(--secondary), #ffc14e); color: white; border: none; border-radius: 0.5rem; padding: 0.6rem 1rem; font-size: 1rem; font-weight: 700; font-family: 'Baloo 2', cursive; cursor: pointer; width: 100%; box-shadow: 0 3px 0 0 #c27e0f; transition: all 0.2s; }
-        
-        .table-section { grid-column: 1 / -1; margin-top: 2rem; padding-top: 2rem; border-top: 2px dashed var(--border-color); }
-        .table-section h2 { text-align: center; color: var(--primary); margin-bottom: 1.5rem; font-size: 1.8rem; }
-        .table-container { width: 100%; overflow-x: auto; border-radius: 1.5rem; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08); background-color: var(--card-bg); }
-        .detailed-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+        /* Detaylı Tablo */
+        .table-container { width: 100%; overflow-x: auto; }
+        .detailed-table { width: 100%; border-collapse: separate; border-spacing: 0; background-color: var(--white); border-radius: 12px; border: 1px solid var(--border-color); overflow: hidden; }
+        .detailed-table th, .detailed-table td { padding: 12px; text-align: center; transition: opacity 0.3s ease; }
         .detailed-table tr:not(:last-child) { border-bottom: 1px solid var(--border-color); }
-        .detailed-table th, .detailed-table td { padding: 16px; text-align: center; vertical-align: middle; font-size: clamp(0.9rem, 2vw, 1.1rem); position: relative; }
-        .detailed-table th { background-color: var(--header-bg); font-weight: 700; width: 15%; text-align: left; padding-left: 1.5rem; color: var(--primary-dark); border-right: 1px solid var(--border-color); }
+        .detailed-table th { font-weight: 700; color: var(--primary-dark); text-align: left; vertical-align: middle;}
+        .detailed-table th .row-toggle-btn { font-size: 1rem; cursor: pointer; opacity: 0.6; transition: opacity 0.2s; margin-right: 0.5rem; user-select: none; }
+        .detailed-table th .row-toggle-btn:hover { opacity: 1; }
+        .detailed-table tr.is-hidden td { opacity: 0; }
         .detailed-table .binler-bolugu { background-color: var(--binler-boluk-bg); }
         .detailed-table .birler-bolugu { background-color: var(--birler-boluk-bg); }
-        .cell-content, .digit-cell-content { font-weight: bold; transition: opacity 0.3s ease; }
-        .detailed-table .basamak-degeri .cell-content, .detailed-table .sayi-degeri .cell-content { color: var(--accent-red); font-size: clamp(1rem, 2.5vw, 1.3rem); font-weight: 800; }
-        
-        .detailed-table .cozumleme .cell-content {
-            color: var(--accent-blue);
-            font-size: clamp(0.85rem, 2vw, 1rem);
-            font-weight: 700;
-        }
+        .detailed-table .basamak-degeri, .detailed-table .sayi-degeri { font-weight: 700; color: var(--accent); }
+        .detailed-table .cozumleme { font-size: 0.9rem; color: var(--secondary); }
+        .detailed-table .okunus-row td { font-weight: 700; font-size: 1rem; }
 
-        .detailed-table .okunus .cell-content { color: var(--primary-dark); text-transform: uppercase; font-weight: 700; }
-        .digit-control { display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .digit-control .digit { font-size: clamp(1.5rem, 4vw, 2.2rem); color: var(--text-color); min-width: 40px; }
-        .visibility-toggle { position: absolute; top: 8px; right: 8px; cursor: pointer; opacity: 0.4; transition: opacity 0.2s; font-size: 1.1rem; border: none; background: none; color: var(--primary); }
-        .visibility-toggle:hover { opacity: 1; }
-        .content-hidden .cell-content, .content-hidden .digit-cell-content { opacity: 0; }
-
-        .instructions { grid-column: 1 / -1; padding: 1rem; background-color: #eef0fa; border-radius: 1rem; }
-        .instructions h2 { text-align: center; margin-bottom: 0.6rem; color: var(--primary); } .instructions ul { list-style-position: inside; padding-left: 0.6rem; } .instructions ul li { margin-bottom: 0.3rem; }
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); justify-content: center; align-items: center; backdrop-filter: blur(5px); }
-        .modal-content { background-color: #fefefe; padding: 1.5rem; border-radius: 1rem; width: 90%; max-width: 800px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); position: relative; border: none; }
-        .close-btn { color: #aaa; position: absolute; top: 0.5rem; right: 1rem; font-size: 2rem; font-weight: bold; cursor: pointer; transition: color 0.2s; }
-        #expansion-result { font-weight: 700; color: var(--primary-dark); word-wrap: break-word; text-align: left; } #expansion-result p { font-size: clamp(1rem, 4vw, 1.2rem); margin-top: 0.3rem; }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        /* Basamak Merdiveni */
         .staircase-container { display: flex; flex-direction: column-reverse; align-items: flex-start; gap: 8px; padding: 1rem 0; min-height: 250px; }
-        .staircase-step { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border-left: 8px solid; width: calc(40% + var(--step-index) * 10%); max-width: 100%; opacity: 0; animation: fadeInUp 0.5s ease-out forwards; margin-left: calc(var(--step-index) * 2rem); }
+        .staircase-step { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; border-radius: 12px; box-shadow: var(--shadow-sm); border-left: 8px solid; width: 70%; max-width: 500px; animation: fadeInUp 0.5s ease-out forwards; margin-left: calc(var(--step-index) * 1.5rem); }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .staircase-step:nth-child(1) { background-color: #c7ecee; border-color: #1abc9c; } .staircase-step:nth-child(2) { background-color: #a9dfbf; border-color: #2ecc71; } .staircase-step:nth-child(3) { background-color: #f9e79f; border-color: #f1c40f; } .staircase-step:nth-child(4) { background-color: #f5cba7; border-color: #e67e22; } .staircase-step:nth-child(5) { background-color: #d7bde2; border-color: #9b59b6; } .staircase-step:nth-child(6) { background-color: #aed6f1; border-color: #3498db; }
-        .staircase-label { font-weight: 700; color: #555; font-size: clamp(0.9rem, 2.5vw, 1rem); }
-        .staircase-value { font-weight: 800; color: var(--primary-dark); font-size: clamp(1rem, 3vw, 1.3rem); background-color: rgba(255, 255, 255, 0.5); padding: 4px 10px; border-radius: 8px; }
+        .staircase-label { font-weight: 600; color: #555; font-size: clamp(0.9rem, 2.5vw, 1rem); }
+        .staircase-value { font-weight: 700; color: var(--text-dark); font-size: clamp(1rem, 3vw, 1.3rem); }
+
+        /* Sayfa Altı Notu */
+        .page-footer { margin-top: 1.5rem; text-align: center; font-size: 0.9rem; color: var(--text-light); font-weight: 600; }
     </style>
 </head>
 <body>
-    <div class="container" id="app-container">
-        <main class="main-content">
-            <header><h1>✨ Sayı Analiz Platformu ✨</h1></header>
-            <div class="blocks-container">
-                <div class="number-block" id="binler-block"><h3 class="block-label">Binler Bölüğü</h3><div class="digit-grid" id="thousands-grid"></div></div>
-                <div class="number-block" id="birler-block"><h3 class="block-label">Birler Bölüğü</h3><div class="digit-grid" id="ones-grid"></div></div>
-            </div>
-            <div class="controls">
-                <button id="random-btn" class="control-btn random">🎲 Rastgele</button>
-                <button id="swap-btn" class="control-btn swap">🔄 Değiştir</button>
-                <button id="stair-btn" class="control-btn stair">🪜 Merdiven Yap</button>
-                <button id="analyze-btn" class="control-btn analyze">🔍 Çözümle</button>
-                <button id="reset-btn" class="control-btn reset">🧹 Sıfırla</button>
-            </div>
-            <div class="manual-entry"><input type="number" id="number-input" placeholder="Sayıyı buraya yaz..."></div>
-        </main>
 
-        <aside class="info-panel" id="info-panel">
-            <div class="info-box"><h3>🔢 Tam Sayı</h3><div id="full-number-display">0</div></div>
-            <div class="info-box" id="selected-digit-info">
-                <h3>📌 Seçili Rakam</h3>
-                <div class="selection-line"><span>Basamak Adı:</span><strong id="selected-name">--</strong></div>
-                <div class="selection-line"><span>Basamak Değeri:</span><strong id="selected-place-value">--</strong></div>
-                <div class="selection-line"><span>Sayı Değeri:</span><strong id="selected-face-value">--</strong></div>
+    <div class="app-shell">
+        <header>
+            <h1>
+                <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor"><path d="M19,3H5C3.9,3,3,3.9,3,5v14c0,1.1,0.9,2,2,2h14c1.1,0,2-0.9,2-2V5C21,3.9,20.1,3,19,3z M9.25,17.25h-2v-7h2V17.25z M12.75,17.25h-2v-4h2V17.25z M16.25,17.25h-2V7h2V17.25z"/></svg>
+                Sayı Macerası
+            </h1>
+        </header>
+
+        <main class="number-explorer" id="number-explorer">
+            <div class="hero-number-container">
+                <div class="block-name thousands">Binler Bölüğü</div>
+                <div class="block-name ones">Birler Bölüğü</div>
+                <div class="hero-number-display" id="hero-number"></div>
             </div>
-            <div class="info-box">
-                <h3>📊 Bilgileri Göster/Gizle</h3>
-                <ul class="options-list">
-                    <li><input type="checkbox" id="show-selection-panel" checked> <label for="show-selection-panel">Seçili Rakam Paneli</label></li>
-                    <li><input type="checkbox" id="show-block-names" checked> <label for="show-block-names">Bölük Adları</label></li>
-                    <li><input type="checkbox" id="show-place-names" checked> <label for="show-place-names">Basamak Adları</label></li>
-                    <li><input type="checkbox" id="show-place-sum"> <label for="show-place-sum">📐 Basamak Değerleri</label></li>
-                    <li><input type="checkbox" id="show-digit-sum"> <label for="show-digit-sum">🔢 Sayı Değerleri</label></li>
-                    <li><input type="checkbox" id="show-readout"> <label for="show-readout">📖 Okunuşu</label></li>
-                </ul>
-                <div id="place-sum-result" class="info-result"></div>
-                <div id="digit-sum-result" class="info-result"></div>
-                <div id="readout-section">
-                    <hr style="margin: 1rem 0; border: none; border-top: 1px solid var(--border-color);"><p id="number-text"></p><p id="number-syllables"></p><button id="speak-btn">🔊 Sesli Oku</button>
+            <div class="digit-info-panel" id="info-panel">
+                <button id="info-panel-toggle" class="panel-toggle-btn">✖</button>
+                <div class="info-grid">
+                    <div class="info-item"><div class="label">Basamak Adı</div><div class="value" id="info-place-name">--</div></div>
+                    <div class="info-item"><div class="label">Sayı Değeri</div><div class="value" id="info-face-value">--</div></div>
+                    <div class="info-item" style="grid-column: 1 / -1;"><div class="label">Basamak Değeri</div><div class="value place-value" id="info-place-value">--</div></div>
                 </div>
             </div>
-        </aside>
+        </main>
 
-        <section class="table-section">
-            <h2>Detaylı Basamak Tablosu</h2>
-            <div class="table-container">
-                <table class="detailed-table" id="detailed-table">
-                    <tbody id="detailed-table-body"></tbody>
-                </table>
+        <nav class="tab-controls" id="tab-controls">
+            <button class="tab-btn active" data-tab="analysis">📊 Sayı Analizi</button>
+            <button class="tab-btn" data-tab="staircase">🪜 Basamak Merdiveni</button>
+            <button class="tab-btn" data-tab="table">📜 Detaylı Tablo</button>
+            <button class="tab-btn" data-tab="tools">⚙️ Araçlar ve Ayarlar</button>
+        </nav>
+
+        <div class="tab-content">
+            <div id="tab-analysis" class="tab-pane active">
+                <details><summary>📖 Sayının Okunuşu</summary><div class="accordion-content"><p id="readout-text"></p><p id="readout-syllables"></p></div></details>
+                <details><summary>➕ Basamak Değerleri Toplamı</summary><div class="accordion-content" id="analysis-place-values"></div></details>
+                <details><summary>🔢 Sayı Değerleri Toplamı</summary><div class="accordion-content" id="analysis-face-values"></div></details>
+                <details><summary>➗ Çözümleme</summary><div class="accordion-content" id="analysis-decomposition"></div></details>
             </div>
-        </section>
-
-        <footer class="instructions">
-            <h2>Nasıl Kullanılır? 🤔</h2>
-            <ul>
-                <li><strong>Bir karta tıkla</strong> ve sağdaki panelde bilgilerini gör. <strong>Aynı karta tekrar tıkla</strong> ve onu gizle!</li>
-                <li><strong>+/- butonları</strong> ile sayıyı değiştir. Yaptığın değişiklik anında diğer araca yansıyacaktır.</li>
-                <li><strong>🪜 Merdiven Yap</strong> ile sayının basamak değerlerini görsel olarak incele.</li>
-                <li>Sağdaki kutucukları işaretleyerek farklı bilgileri ve panelleri açıp kapatabilirsin.</li>
-            </ul>
-        </footer>
-        
-        <div style="grid-column: 1 / -1; text-align: center; margin-top: 1rem; color: #555; font-size: 0.9rem; font-weight: 600;">
-            Bu çalışmayı hazırlayan Zeynal Öğretmen'e teşekkürler.
+            <div id="tab-staircase" class="tab-pane"><div class="staircase-container" id="staircase-container"></div></div>
+            <div id="tab-table" class="tab-pane">
+                <div class="table-container">
+                    <table class="detailed-table" id="detailed-table">
+                        <tbody id="detailed-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div id="tab-tools" class="tab-pane">
+                <div class="tools-section">
+                     <h3>Araçlar</h3>
+                    <div class="tools-grid">
+                        <button class="tool-btn random" id="random-btn">🎲 Rastgele Sayı</button>
+                        <button class="tool-btn swap" id="swap-btn">🔄 Bölük Değiştir</button>
+                        <button class="tool-btn reset" id="reset-btn">🧹 Sıfırla</button>
+                    </div>
+                </div>
+                <div class="tools-section">
+                    <h3>Sayıyı Oluştur</h3>
+                    <div class="digit-input-grid" id="digit-input-grid">
+                        </div>
+                </div>
+                 <div class="tools-section">
+                    <h3>Görünüm Ayarları</h3>
+                    <div class="view-options">
+                        <label><input type="checkbox" id="toggle-block-names" checked> Bölük Adlarını Göster</label>
+                        <label><input type="checkbox" id="toggle-place-names" checked> Basamak Adlarını Göster</label>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-
-    <div id="expansion-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn">&times;</span><h2 id="modal-title">Başlık</h2><div id="expansion-result"></div>
-        </div>
-    </div>
+    
+    <footer class="page-footer">
+        Bu çalışmayı yapan Zeynal Öğretmen'e teşekkürler.
+    </footer>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // --- STATE & CONSTANTS ---
-            const placeNames = ['Yüz Binler', 'On Binler', 'Binler', 'Yüzler', 'Onlar', 'Birler'];
-            const placeValues = [100000, 10000, 1000, 100, 10, 1];
-            let digits = [1, 2, 3, 4, 5, 6];
-            let hiddenDigits = [false, false, false, false, false, false];
-            let selectedDigitIndex = -1;
-            let voices = [];
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- STATE & CONSTANTS ---
+        const placeNames = ['Yüz Binler', 'On Binler', 'Binler', 'Yüzler', 'Onlar', 'Birler'];
+        const shortPlaceNames = ['Y.BİN', 'O.BİN', 'BİN', 'YÜZ', 'ON', 'BİR'];
+        const placeValues = [100000, 10000, 1000, 100, 10, 1];
+        let digits = [1, 2, 3, 4, 5, 6];
+        let hiddenDigits = [false, false, false, false, false, false];
+        let selectedDigitIndex = -1;
+        let tableRowVisibility = { block: true, name: true, p_value: true, deco: true, f_value: true, readout: true };
 
-            // --- DOM ELEMENTS ---
-            const appContainer = document.getElementById('app-container');
-            const infoPanel = document.getElementById('info-panel');
-            const thousandsGrid = document.getElementById('thousands-grid');
-            const onesGrid = document.getElementById('ones-grid');
-            const fullNumberDisplay = document.getElementById('full-number-display');
-            const randomBtn = document.getElementById('random-btn');
-            const resetBtn = document.getElementById('reset-btn');
-            const stairBtn = document.getElementById('stair-btn');
-            const analyzeBtn = document.getElementById('analyze-btn');
-            const swapBtn = document.getElementById('swap-btn');
-            const numberInput = document.getElementById('number-input');
-            const showSelectionPanelCheck = document.getElementById('show-selection-panel');
-            const showBlockNamesCheck = document.getElementById('show-block-names');
-            const showPlaceNamesCheck = document.getElementById('show-place-names');
-            const showPlaceSumCheck = document.getElementById('show-place-sum');
-            const showDigitSumCheck = document.getElementById('show-digit-sum');
-            const showReadoutCheck = document.getElementById('show-readout');
-            const readoutSection = document.getElementById('readout-section');
-            const modal = document.getElementById('expansion-modal');
-            const modalTitle = document.getElementById('modal-title');
-            const closeBtn = document.querySelector('.modal .close-btn');
-            const expansionResult = document.getElementById('expansion-result');
-            const selectedNameEl = document.getElementById('selected-name');
-            const selectedPlaceValueEl = document.getElementById('selected-place-value');
-            const selectedFaceValueEl = document.getElementById('selected-face-value');
-            const detailedTableBody = document.getElementById('detailed-table-body'); // Tablonun body'si hedefleniyor
+        // --- DOM ELEMENTS ---
+        const numberExplorer = document.getElementById('number-explorer');
+        const heroNumberContainer = document.getElementById('hero-number');
+        const infoPanel = document.getElementById('info-panel');
+        const tabControls = document.getElementById('tab-controls');
+        const tabPanes = document.querySelectorAll('.tab-pane');
+        const detailedTableBody = document.getElementById('detailed-table-body');
+        const digitInputGrid = document.getElementById('digit-input-grid');
+        const infoPanelToggle = document.getElementById('info-panel-toggle');
 
-            // --- MAIN UPDATE FUNCTION ---
-            function updateAllUI() {
-                updateDigitCards();
-                updateInfoPanel();
-                updateDetailedTable();
-            }
+        // --- RENDER FUNCTIONS ---
+        function renderAll() {
+            renderHeroNumber();
+            renderInfoPanel();
+            updateDigitInputs();
+            renderAnalysisTab();
+            const activeTab = document.querySelector('.tab-btn.active').dataset.tab;
+            if (activeTab === 'staircase') renderStaircaseTab();
+            if (activeTab === 'table') renderDetailedTable();
+        }
 
-            // --- UI UPDATE HELPERS ---
-            function updateDigitCards() {
-                document.querySelectorAll('.digit-card').forEach((card, index) => {
-                    card.querySelector('.digit').textContent = digits[index];
-                    card.classList.toggle('hidden', hiddenDigits[index]);
-                    card.classList.toggle('selected', index === selectedDigitIndex);
-                });
-            }
-            
-            function updateInfoPanel() {
-                let displayString = '';
-                for (let i = 0; i < digits.length; i++) {
-                    displayString += hiddenDigits[i] ? '?' : digits[i];
-                    if (i === 2 && digits.length > 3) displayString += '.';
-                }
-                fullNumberDisplay.textContent = displayString;
-                if (selectedDigitIndex !== -1) {
-                    selectedNameEl.textContent = placeNames[selectedDigitIndex];
-                    selectedPlaceValueEl.textContent = (digits[selectedDigitIndex] * placeValues[selectedDigitIndex]).toLocaleString('tr-TR');
-                    selectedFaceValueEl.textContent = digits[selectedDigitIndex];
-                } else {
-                    selectedNameEl.textContent = '--';
-                    selectedPlaceValueEl.textContent = '--';
-                    selectedFaceValueEl.textContent = '--';
-                }
-                const c = ['yüz binlik', 'on binlik', 'binlik', 'yüzlük', 'onluk', 'birlik'];
-                const p = document.getElementById('place-sum-result'), d = document.getElementById('digit-sum-result');
-                p.style.display = showPlaceSumCheck.checked ? 'block' : 'none';
-                d.style.display = showDigitSumCheck.checked ? 'block' : 'none';
-                readoutSection.style.display = showReadoutCheck.checked ? 'block' : 'none';
-
-                if (showPlaceSumCheck.checked) {
-                    const parts = digits.map((v, i) => (v > 0 ? `${v} ${c[i]}` : null)).filter(Boolean);
-                    p.innerHTML = `<strong>Çözümleme:</strong><br>${parts.length > 0 ? parts.join(' + ') : 'Sıfır'}`;
-                }
-                if (showDigitSumCheck.checked) {
-                    d.textContent = `${digits.join(' + ')} = ${digits.reduce((a, b) => a + b, 0)}`;
-                }
-                if (showReadoutCheck.checked) {
-                    const text = numberToTurkish(calculateFullNumber());
-                    document.getElementById('number-text').textContent = text;
-                    document.getElementById('number-syllables').textContent = `(${text.split(' ').join(' / ')})`;
-                }
-            }
-
-            function updateDetailedTable() {
-                const number = calculateFullNumber();
-                const thousandsPart = Math.floor(number / 1000);
-                const onesPart = number % 1000;
-                const thousandsText = (thousandsPart > 0) ? `${numberToTurkish(thousandsPart, true)} BİN` : '';
-                const onesText = (onesPart > 0) ? numberToTurkish(onesPart, true) : (number === 0 ? 'SIFIR' : '');
-
-                let tableRowsHTML = `
-                    <tr><th>Sayı</th>
-                        ${digits.map((d, i) => `<td class="${i < 3 ? 'binler-bolugu' : 'birler-bolugu'}"><div class="digit-cell-content"><div class="digit-control"><button class="app-change-btn" data-index="${i}" data-amount="-1">–</button><span class="digit">${d}</span><button class="app-change-btn" data-index="${i}" data-amount="1">+</button></div></div><button class="visibility-toggle">👁️</button></td>`).join('')}
-                    </tr>
-                    <tr><th>Bölük Adı</th>
-                        <td class="binler-bolugu" colspan="3"><span class="cell-content">Binler Bölüğü</span><button class="visibility-toggle">👁️</button></td>
-                        <td class="birler-bolugu" colspan="3"><span class="cell-content">Birler Bölüğü</span><button class="visibility-toggle">👁️</button></td>
-                    </tr>
-                    <tr><th>Basamak Adı</th>
-                        ${placeNames.map((name, i) => `<td class="${i < 3 ? 'binler-bolugu' : 'birler-bolugu'}"><span class="cell-content">${name}</span><button class="visibility-toggle">👁️</button></td>`).join('')}
-                    </tr>
-                    <tr class="basamak-degeri"><th>Basamak Değeri</th>
-                        ${digits.map((d, i) => `<td class="${i < 3 ? 'binler-bolugu' : 'birler-bolugu'}"><span class="cell-content">${(d * placeValues[i]).toLocaleString('tr-TR')}</span><button class="visibility-toggle">👁️</button></td>`).join('')}
-                    </tr>
-                    <tr class="cozumleme"><th>Çözümleme</th>
-                        ${digits.map((d, i) => `<td class="${i < 3 ? 'binler-bolugu' : 'birler-bolugu'}"><span class="cell-content">(${d} × ${placeValues[i].toLocaleString('tr-TR')})</span><button class="visibility-toggle">👁️</button></td>`).join('')}
-                    </tr>
-                    <tr class="sayi-degeri"><th>Sayı Değeri</th>
-                        ${digits.map((d, i) => `<td class="${i < 3 ? 'binler-bolugu' : 'birler-bolugu'}"><span class="cell-content">${d}</span><button class="visibility-toggle">👁️</button></td>`).join('')}
-                    </tr>
-                    <tr class="okunus"><th>Sayının Okunuşu</th>
-                        <td class="binler-bolugu" colspan="3"><span class="cell-content">${thousandsText}</span><button class="visibility-toggle">👁️</button></td>
-                        <td class="birler-bolugu" colspan="3"><span class="cell-content">${onesText}</span><button class="visibility-toggle">👁️</button></td>
-                    </tr>
+        function renderHeroNumber() {
+            heroNumberContainer.innerHTML = '';
+            digits.forEach((digit, index) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'digit-wrapper';
+                const isHidden = hiddenDigits[index];
+                wrapper.innerHTML = `
+                    <button class="change-btn" data-index="${index}" data-amount="1">+</button>
+                    <div class="digit-main ${isHidden ? 'hidden' : ''}" data-index="${index}">${isHidden ? '?' : digit}</div>
+                    <button class="change-btn" data-index="${index}" data-amount="-1">–</button>
+                    <div class="place-name">${placeNames[index]}</div>
                 `;
-                detailedTableBody.innerHTML = tableRowsHTML;
+                heroNumberContainer.appendChild(wrapper);
+            });
+            if (selectedDigitIndex !== -1 && !hiddenDigits[selectedDigitIndex]) {
+                heroNumberContainer.children[selectedDigitIndex].querySelector('.digit-main').classList.add('selected');
             }
+        }
+        
+        // Diğer render fonksiyonları aynı...
 
-            // --- EVENT HANDLERS & LOGIC ---
-            function changeDigit(index, amount) {
-                if (hiddenDigits[index]) return;
-                let newNumber = calculateFullNumber() + (amount * placeValues[index]);
-                if (newNumber > 999999) newNumber -= 1000000;
-                if (newNumber < 0) newNumber += 1000000;
-                digits = newNumber.toString().padStart(6, '0').split('').map(Number);
-                updateAllUI();
+        function renderInfoPanel() {
+            if (selectedDigitIndex === -1 || hiddenDigits[selectedDigitIndex]) {
+                infoPanel.classList.remove('visible'); return;
             }
+            const digit = digits[selectedDigitIndex];
+            const placeValue = digit * placeValues[selectedDigitIndex];
+            document.getElementById('info-place-name').textContent = placeNames[selectedDigitIndex];
+            document.getElementById('info-face-value').textContent = digit;
+            document.getElementById('info-place-value').textContent = placeValue.toLocaleString('tr-TR');
+            infoPanel.classList.add('visible');
+        }
 
-            function handleDigitClick(index) {
-                if (selectedDigitIndex === index) {
-                    hiddenDigits[index] = !hiddenDigits[index];
-                    if (hiddenDigits[index]) {
-                       selectedDigitIndex = -1;
-                    }
+        function renderAnalysisTab() {
+            const fullNumber = calculateFullNumber();
+            const readout = numberToTurkish(fullNumber);
+            document.getElementById('readout-text').textContent = readout.charAt(0).toUpperCase() + readout.slice(1) || 'Sıfır';
+            document.getElementById('readout-syllables').textContent = `(${readout.split(' ').join(' / ')})`;
+            const placeValuesText = digits.map((d, i) => hiddenDigits[i] ? 0 : d * placeValues[i]).filter(v => v > 0).join(' + ') || '0';
+            document.getElementById('analysis-place-values').textContent = placeValuesText;
+            const visibleDigits = digits.filter((d, i) => !hiddenDigits[i]);
+            const faceValuesSum = visibleDigits.reduce((a, b) => a + b, 0);
+            document.getElementById('analysis-face-values').textContent = visibleDigits.length > 0 ? visibleDigits.join(' + ') + ` = ${faceValuesSum}` : '0';
+            const decompositionText = digits.map((d, i) => (d > 0 && !hiddenDigits[i]) ? `(${d} × ${placeValues[i].toLocaleString('tr-TR')})` : null).filter(Boolean).join(' + ') || '0';
+            document.getElementById('analysis-decomposition').textContent = decompositionText;
+        }
+
+        function renderStaircaseTab() {
+            const container = document.getElementById('staircase-container');
+            container.innerHTML = '';
+            for (let i = 5; i >= 0; i--) {
+                const step = document.createElement('div');
+                step.className = 'staircase-step';
+                step.style.setProperty('--step-index', 5 - i);
+                step.style.animationDelay = `${(5 - i) * 0.08}s`;
+                const placeValue = hiddenDigits[i] ? '?' : (digits[i] * placeValues[i]).toLocaleString('tr-TR');
+                step.innerHTML = `<span class="staircase-label">${placeNames[i]}</span><span class="staircase-value">${placeValue}</span>`;
+                container.appendChild(step);
+            }
+        }
+
+        function renderDetailedTable() {
+            const mainRows = [
+                { key: 'block', title: 'Bölük Adı' }, { key: 'name', title: 'Basamak Adı' },
+                { key: 'p_value', title: 'Basamak Değeri' }, { key: 'deco', title: 'Çözümleme' },
+                { key: 'f_value', title: 'Sayı Değeri' }
+            ];
+            let html = '';
+            mainRows.forEach(row => {
+                const isHiddenClass = tableRowVisibility[row.key] ? '' : 'is-hidden';
+                html += `<tr class="${isHiddenClass}"><th><span class="row-toggle-btn" data-row-key="${row.key}">👁️</span>${row.title}</th>`;
+                if (row.key === 'block') {
+                    html += `<td class="binler-bolugu" colspan="3">Binler Bölüğü</td><td class="birler-bolugu" colspan="3">Birler Bölüğü</td>`;
                 } else {
-                    selectedDigitIndex = index;
-                }
-                updateAllUI();
-            }
-
-            function resetNumber() {
-                digits.fill(0);
-                hiddenDigits.fill(false);
-                selectedDigitIndex = -1;
-                numberInput.value = '';
-                updateAllUI();
-            }
-
-            // --- HELPER FUNCTIONS ---
-            const calculateFullNumber = () => digits.reduce((acc, d, i) => acc + d * placeValues[i], 0);
-            function numberToTurkish(num, isTable = false) { if (num === 0) return isTable ? '' : 'sıfır'; const o = ["", "bir", "iki", "üç", "dört", "beş", "altı", "yedi", "sekiz", "dokuz"], t = ["", "on", "yirmi", "otuz", "kırk", "elli", "altmış", "yetmiş", "seksen", "doksan"]; const conv = n => { let r = "", h = Math.floor(n / 100), m = Math.floor((n % 100) / 10), l = n % 10; if (h > 0) r += (h > 1 ? o[h] + " " : "") + "yüz "; if (m > 0) r += t[m] + " "; if (l > 0) r += o[l] + " "; return r.trim(); }; const th = Math.floor(num / 1000), r = num % 1000; let res = ""; if (th > 0) res += (th === 1 ? "bin " : conv(th) + " bin "); if (r > 0) res += conv(r); return isTable ? res.toUpperCase() : res; }
-            const openModal = (title, content) => { modalTitle.innerHTML = title; expansionResult.innerHTML = ''; if (typeof content === 'string') expansionResult.innerHTML = content; else expansionResult.appendChild(content); modal.style.display = 'flex'; };
-            
-            // --- INITIALIZATION ---
-            function createDigitCards() {
-                thousandsGrid.innerHTML = ''; onesGrid.innerHTML = '';
-                placeNames.forEach((name, index) => {
-                    const container = document.createElement('div'); container.className = 'digit-container';
-                    const card = document.createElement('div'); card.className = 'digit-card'; card.dataset.index = index;
-                    card.innerHTML = `<button class="app-change-btn">+</button><span class="digit">0</span><button class="app-change-btn">–</button>`;
-                    const nameSpan = document.createElement('div'); nameSpan.className = 'place-name'; nameSpan.textContent = name;
-                    container.appendChild(card); container.appendChild(nameSpan);
-                    card.querySelector('.app-change-btn:first-of-type').onclick = (e) => { e.stopPropagation(); changeDigit(index, 1); };
-                    card.querySelector('.app-change-btn:last-of-type').onclick = (e) => { e.stopPropagation(); changeDigit(index, -1); };
-                    card.addEventListener('click', () => handleDigitClick(index));
-                    (index < 3 ? thousandsGrid : onesGrid).appendChild(container);
-                });
-            }
-
-            function addEventListeners() {
-                randomBtn.addEventListener('click', () => { digits = Array.from({length: 6}, () => Math.floor(Math.random() * 10)); if (digits[0] === 0) digits[0] = Math.floor(Math.random() * 9) + 1; hiddenDigits.fill(false); updateAllUI(); });
-                resetBtn.addEventListener('click', resetNumber);
-                stairBtn.addEventListener('click', () => { const container = document.createElement('div'); container.className = 'staircase-container'; for (let i = 5; i >= 0; i--) { const step = document.createElement('div'); step.className = 'staircase-step'; step.style.setProperty('--step-index', 5 - i); step.style.animationDelay = `${(5 - i) * 0.1}s`; const placeValue = hiddenDigits[i] ? '?' : (digits[i] * placeValues[i]).toLocaleString('tr-TR'); step.innerHTML = `<span class="staircase-label">${placeNames[i]}</span><span class="staircase-value">${placeValue}</span>`; container.appendChild(step); } openModal('🪜 Basamak Merdiveni 🪜', container); });
-                analyzeBtn.addEventListener('click', () => { const bv = digits.map((d, i) => d * placeValues[i]).filter(v => v > 0); const cz = digits.map((d, i) => d > 0 ? `(${d} × ${placeValues[i].toLocaleString('tr-TR')})` : null).filter(Boolean); const html = `<strong style="font-size:1.1rem">Basamak Değerleri Toplamı:</strong><p style="margin-bottom:1.5rem">${bv.length > 0 ? bv.join(' + ') : '0'}</p><strong style="font-size:1.1rem">Çözümleme Biçimi:</strong><p>${cz.length > 0 ? cz.join(' + ') : '0'}</p>`; openModal('🔍 Sayı Çözümlemesi 🔍', html); });
-                swapBtn.addEventListener('click', () => { digits = [...digits.slice(3, 6), ...digits.slice(0, 3)]; hiddenDigits = [...hiddenDigits.slice(3, 6), ...hiddenDigits.slice(0, 3)]; updateAllUI(); });
-                numberInput.addEventListener('input', () => { const val = numberInput.value.slice(0, 6).padStart(6, '0'); digits = val.split('').map(Number); hiddenDigits.fill(false); updateAllUI(); });
-                showSelectionPanelCheck.addEventListener('change', () => infoPanel.classList.toggle('hide-selection-panel', !showSelectionPanelCheck.checked));
-                showBlockNamesCheck.addEventListener('change', () => appContainer.classList.toggle('hide-block-names', !showBlockNamesCheck.checked));
-                showPlaceNamesCheck.addEventListener('change', () => appContainer.classList.toggle('hide-place-names', !showPlaceNamesCheck.checked));
-                [showPlaceSumCheck, showDigitSumCheck, showReadoutCheck].forEach(el => el.addEventListener('change', updateInfoPanel));
-                closeBtn.addEventListener('click', () => modal.style.display = 'none');
-                window.addEventListener('click', (e) => { if (e.target == modal) modal.style.display = 'none'; });
-                document.getElementById('speak-btn').addEventListener('click', () => { const text = document.getElementById('number-text').textContent; if (!text) return; speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = 'tr-TR'; u.rate = 0.8; if (voices.length > 0) u.voice = voices[0]; speechSynthesis.speak(u); });
-
-                // Düzeltilmiş Olay Dinleyici (Event Delegation)
-                const tableContainer = document.querySelector('.table-container');
-                tableContainer.addEventListener('click', (e) => {
-                    const target = e.target;
-                    if (target.matches('.visibility-toggle')) {
-                        target.closest('td, th').classList.toggle('content-hidden');
-                    } else if (target.matches('.app-change-btn')) {
-                        const index = parseInt(target.dataset.index);
-                        const amount = parseInt(target.dataset.amount);
-                        if (!isNaN(index) && !isNaN(amount)) {
-                            changeDigit(index, amount);
+                    for (let i = 0; i < 6; i++) {
+                        const isThousands = i < 3 ? 'binler-bolugu' : 'birler-bolugu';
+                        let content = '';
+                        switch (row.key) {
+                            case 'name': content = placeNames[i]; break;
+                            case 'p_value': content = hiddenDigits[i] ? '?' : (digits[i] * placeValues[i]).toLocaleString('tr-TR'); break;
+                            case 'deco': content = hiddenDigits[i] ? '?' : `(${digits[i]} × ${placeValues[i].toLocaleString('tr-TR')})`; break;
+                            case 'f_value': content = hiddenDigits[i] ? '?' : digits[i]; break;
                         }
+                        html += `<td class="${isThousands} ${row.key === 'p_value' || row.key === 'f_value' ? 'basamak-degeri' : ''} ${row.key === 'deco' ? 'cozumleme' : ''}">${content}</td>`;
                     }
-                });
-            }
+                }
+                html += `</tr>`;
+            });
 
-            // --- RUN ---
-            createDigitCards();
-            addEventListeners();
-            resetNumber();
-            
-            voices = speechSynthesis.getVoices().filter(voice => voice.lang.startsWith('tr'));
-            if (speechSynthesis.onvoiceschanged !== undefined) {
-                speechSynthesis.onvoiceschanged = () => { voices = speechSynthesis.getVoices().filter(voice => voice.lang.startsWith('tr')); };
+            const isReadoutHidden = tableRowVisibility.readout ? '' : 'is-hidden';
+            const fullNum = calculateFullNumber();
+            const thousandsNum = Math.floor(fullNum / 1000);
+            const onesNum = fullNum % 1000;
+            const thousandsText = thousandsNum > 0 ? numberToTurkish(thousandsNum) + ' bin' : '';
+            const onesText = onesNum > 0 ? numberToTurkish(onesNum) : (fullNum === 0 && !hiddenDigits.some(h=>h) ? 'sıfır' : '');
+            html += `<tr class="okunus-row ${isReadoutHidden}">
+                        <th><span class="row-toggle-btn" data-row-key="readout">👁️</span>Okunuşu</th>
+                        <td class="binler-bolugu" colspan="3">${thousandsText}</td>
+                        <td class="birler-bolugu" colspan="3">${onesText}</td>
+                     </tr>`;
+            detailedTableBody.innerHTML = html;
+        }
+
+        // --- LOGIC & HELPERS ---
+        const calculateFullNumber = () => digits.reduce((acc, d, i) => hiddenDigits[i] ? acc : acc + d * placeValues[i], 0);
+
+        function changeDigit(index, amount) {
+            if (hiddenDigits[index]) return;
+            digits[index] += amount;
+            if (digits[index] > 9) {
+                digits[index] = 0;
+                if (index > 0) changeDigit(index - 1, 1);
+            } else if (digits[index] < 0) {
+                digits[index] = 9;
+                if (index > 0) changeDigit(index - 1, -1);
+                else digits[index] = 0;
+            }
+            renderAll();
+        }
+        
+        function numberToTurkish(num) { if (num === 0) return 'sıfır'; const o=["", "bir", "iki", "üç", "dört", "beş", "altı", "yedi", "sekiz", "dokuz"],t=["", "on", "yirmi", "otuz", "kırk", "elli", "altmış", "yetmiş", "seksen", "doksan"];const conv=n=>{let r="",h=Math.floor(n/100),m=Math.floor((n%100)/10),l=n%10;if(h>0)r+=(h>1?o[h]+" ":"")+"yüz ";if(m>0)r+=t[m]+" ";if(l>0)r+=o[l]+" ";return r.trim()};const th=Math.floor(num/1000),r=num%1000;let res="";if(th>0)res+=(th===1?"bin ":conv(th)+" bin ");if(r>0)res+=conv(r);return res.trim() }
+
+        // --- Araçlar Sekmesi için yeni fonksiyonlar ---
+        function createDigitInputs() {
+            digitInputGrid.innerHTML = '';
+            for (let i = 0; i < 6; i++) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'input-wrapper';
+                wrapper.innerHTML = `
+                    <label>${shortPlaceNames[i]}</label>
+                    <input type="number" data-index="${i}" maxlength="1" oninput="this.value=this.value.slice(0,1)">
+                `;
+                digitInputGrid.appendChild(wrapper);
+            }
+        }
+
+        function updateDigitInputs() {
+            const inputs = digitInputGrid.querySelectorAll('input');
+            inputs.forEach((input, index) => {
+                input.value = digits[index];
+            });
+        }
+        
+        // --- EVENT LISTENERS ---
+        heroNumberContainer.addEventListener('click', (e) => {
+            const target = e.target;
+            const changeBtn = target.closest('.change-btn');
+            const digitMain = target.closest('.digit-main');
+
+            if (changeBtn) {
+                const index = parseInt(changeBtn.dataset.index);
+                const amount = parseInt(changeBtn.dataset.amount);
+                changeDigit(index, amount);
+            } else if (digitMain) {
+                const index = parseInt(digitMain.dataset.index);
+                const isHidden = hiddenDigits[index];
+                const isSelected = selectedDigitIndex === index;
+
+                if (isHidden) {
+                    hiddenDigits[index] = false;
+                    selectedDigitIndex = index;
+                } else {
+                    if (isSelected) {
+                        hiddenDigits[index] = true;
+                        selectedDigitIndex = -1;
+                    } else {
+                        selectedDigitIndex = index;
+                    }
+                }
+                renderAll();
             }
         });
+
+        tabControls.addEventListener('click', (e) => {
+            if (e.target.matches('.tab-btn')) {
+                const tabId = e.target.dataset.tab;
+                tabControls.querySelector('.active').classList.remove('active');
+                e.target.classList.add('active');
+                tabPanes.forEach(pane => pane.classList.toggle('active', pane.id === `tab-${tabId}`));
+                if (tabId === 'staircase') renderStaircaseTab();
+                if (tabId === 'table') renderDetailedTable();
+            }
+        });
+        
+        detailedTableBody.addEventListener('click', (e) => {
+            if (e.target.matches('.row-toggle-btn')) {
+                const key = e.target.dataset.rowKey;
+                const row = e.target.closest('tr');
+                if (row) {
+                    tableRowVisibility[key] = !tableRowVisibility[key];
+                    row.classList.toggle('is-hidden');
+                }
+            }
+        });
+
+        infoPanelToggle.addEventListener('click', () => {
+            selectedDigitIndex = -1;
+            renderHeroNumber();
+            renderInfoPanel();
+        });
+
+        digitInputGrid.addEventListener('input', (e) => {
+            if(e.target.matches('input')) {
+                const index = parseInt(e.target.dataset.index);
+                const value = e.target.value;
+                digits[index] = value ? parseInt(value) : 0;
+                renderAll();
+                
+                // Otomatik sonraki kutuya geçme
+                if (value && index < 5) {
+                    digitInputGrid.querySelectorAll('input')[index + 1].focus();
+                }
+            }
+        });
+
+        document.getElementById('random-btn').addEventListener('click', () => { digits = Array.from({length: 6}, () => Math.floor(Math.random() * 10)); if (digits[0] === 0) digits[0] = Math.floor(Math.random() * 9) + 1; hiddenDigits.fill(false); selectedDigitIndex = -1; renderAll(); });
+        document.getElementById('swap-btn').addEventListener('click', () => { digits = [...digits.slice(3, 6), ...digits.slice(0, 3)]; hiddenDigits = [...hiddenDigits.slice(3, 6), ...hiddenDigits.slice(0, 3)]; renderAll(); });
+        document.getElementById('reset-btn').addEventListener('click', () => { digits.fill(0); hiddenDigits.fill(false); selectedDigitIndex = -1; tableRowVisibility = { block: true, name: true, p_value: true, deco: true, f_value: true, readout: true }; renderAll(); });
+        document.getElementById('toggle-block-names').addEventListener('change', (e) => numberExplorer.classList.toggle('hide-block-names', !e.target.checked));
+        document.getElementById('toggle-place-names').addEventListener('change', (e) => numberExplorer.classList.toggle('hide-place-names', !e.target.checked));
+
+        // --- INITIALIZATION ---
+        createDigitInputs();
+        renderAll();
+    });
     </script>
 </body>
 </html>
