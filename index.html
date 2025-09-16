@@ -3,24 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sayı Analiz Platformu (Geliştirilmiş Sürüm)</title>
+    <title>Sayı Analiz Platformu (Düzeltilmiş Sürüm)</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;700;800&display=swap" rel="stylesheet">
 
     <style>
-        /* --- BİRLEŞTİRİLMİŞ VE UYUMLU STİLLER --- */
-        
         :root {
             --bg-color: #f4f7fc; --card-bg: #ffffff; --primary: #6a6ff2; --primary-dark: #4a4e9f; --secondary: #f5a623; --accent-green: #2ecc71; --accent-blue: #3498db; --accent-red: #e74c3c; --accent-purple: #9b59b6; --text-color: #34495e; --shadow-light: rgba(106, 111, 242, 0.2); --border-color: #e0e5f0;
-            --binler-boluk-bg: rgba(245, 166, 35, 0.1); /* Soft Turuncu/Sarı */
-            --birler-boluk-bg: rgba(106, 111, 242, 0.1); /* Soft Mavi/Mor */
-            --header-bg: #f8f9fa; /* Nötr Açık Gri */
+            --binler-boluk-bg: rgba(245, 166, 35, 0.1);
+            --birler-boluk-bg: rgba(106, 111, 242, 0.1);
+            --header-bg: #f8f9fa;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { font-size: 16px; scroll-behavior: smooth; }
-        body { font-family: 'Baloo 2', sans-serif; background-color: var(--bg-color); color: var(--text-color); padding: 1rem; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; }
+        body { 
+            font-family: 'Baloo 2', sans-serif; 
+            background-color: var(--bg-color);
+            color: var(--text-color); 
+            padding: 1rem; 
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-start; 
+            min-height: 100vh; 
+        }
+
+        @media (max-width: 991px) {
+            body {
+                background-color: #ffffff;
+                padding: 0.5rem;
+            }
+        }
+
         .container { width: 100%; max-width: 1200px; background: var(--card-bg); border-radius: 1.5rem; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08); padding: 1.25rem; display: grid; grid-template-columns: 1fr; gap: 1.25rem; }
         
         .container.hide-block-names .block-label,
@@ -30,14 +45,12 @@
         .main-content { display: flex; flex-direction: column; gap: 1rem; }
         header h1 { text-align: center; color: var(--primary); font-weight: 800; font-size: clamp(1.8rem, 5vw, 2.2rem); line-height: 1.2; }
         
-        /* Kart Tabanlı Uygulama Stilleri */
-        /* [DÜZELTME] Mobil uyumluluk için media query eklendi */
         .blocks-container { 
             display: grid; 
-            grid-template-columns: 1fr; /* Mobil için varsayılan tek sütun */
+            grid-template-columns: 1fr;
             gap: 1rem; 
         }
-        @media (min-width: 576px) { /* Geniş ekranlar için iki sütun */
+        @media (min-width: 576px) {
             .blocks-container {
                 grid-template-columns: 1fr 1fr;
             }
@@ -59,7 +72,14 @@
         .digit-card .digit { font-weight: 800; color: var(--primary-dark); text-shadow: 2px 2px 0px rgba(255, 255, 255, 0.8), 3px 3px 0px var(--border-color); font-size: clamp(2.5rem, 10vw, 3.5rem); }
         .place-name { margin-top: 0.5rem; font-weight: 700; color: var(--primary-dark); font-size: 0.8rem; transition: all 0.3s ease-out; }
         
-        /* Ortak Kontrol Stilleri */
+        @media (max-width: 767px) {
+            .digit-card { min-height: 110px; padding: 0.4rem; }
+            .digit-card .digit { font-size: 2.2rem; }
+            .app-change-btn { width: 30px; height: 30px; font-size: 1.5rem; }
+            .digit-grid { gap: 0.3rem; }
+            .place-name { font-size: 0.75rem; margin-top: 0.3rem; }
+        }
+
         .controls, .manual-entry { display: flex; justify-content: center; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
         .control-btn { color: white; border: none; border-radius: 0.75rem; padding: 0.6rem 1rem; font-size: 1rem; font-family: 'Baloo 2', cursive; font-weight: 700; cursor: pointer; transition: all 0.2s ease-out; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 0 0 rgba(0,0,0,0.15); }
         .control-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 0 0 rgba(0,0,0,0.15); } .control-btn:active { transform: translateY(1px); box-shadow: 0 2px 0 0 rgba(0,0,0,0.15); }
@@ -69,7 +89,6 @@
         .app-change-btn { background: var(--bg-color); border: 1px solid var(--border-color); color: var(--primary); width: 36px; height: 36px; border-radius: 50%; font-size: 1.8rem; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; line-height: 1; user-select: none; }
         .app-change-btn:hover { background-color: var(--primary); color: white; transform: scale(1.1); }
 
-        /* Sağ Bilgi Paneli Stilleri */
         .info-panel { background-color: #eef7ff; border: 2px solid var(--primary); border-radius: 1.5rem; padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
         .info-box { background-color: white; padding: 1.5rem; border-radius: 1rem; box-shadow: 0 6px 15px rgba(0,0,0,0.08); transition: all 0.35s ease; overflow: hidden; }
         .info-panel.hide-selection-panel #selected-digit-info { opacity: 0; height: 0; padding: 0 1.5rem; margin-bottom: -1.5rem; border: none; pointer-events: none; }
@@ -82,19 +101,24 @@
         #readout-section { display: none; } #number-text, #number-syllables { margin-bottom: 0.5rem; font-size: 1.1rem; } #number-syllables { color: #555; font-style: italic; font-size: 1rem; }
         #speak-btn { background: linear-gradient(45deg, var(--secondary), #ffc14e); color: white; border: none; border-radius: 0.5rem; padding: 0.6rem 1rem; font-size: 1rem; font-weight: 700; font-family: 'Baloo 2', cursive; cursor: pointer; width: 100%; box-shadow: 0 3px 0 0 #c27e0f; transition: all 0.2s; }
         
-        /* Detaylı Tablo Stilleri */
         .table-section { grid-column: 1 / -1; margin-top: 2rem; padding-top: 2rem; border-top: 2px dashed var(--border-color); }
         .table-section h2 { text-align: center; color: var(--primary); margin-bottom: 1.5rem; font-size: 1.8rem; }
         .table-container { width: 100%; overflow-x: auto; border-radius: 1.5rem; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08); background-color: var(--card-bg); }
         .detailed-table { width: 100%; border-collapse: separate; border-spacing: 0; }
         .detailed-table tr:not(:last-child) { border-bottom: 1px solid var(--border-color); }
         .detailed-table th, .detailed-table td { padding: 16px; text-align: center; vertical-align: middle; font-size: clamp(0.9rem, 2vw, 1.1rem); position: relative; }
-        /* [DÜZELTME] Renk uyumu için başlık hücrelerine arka plan eklendi */
         .detailed-table th { background-color: var(--header-bg); font-weight: 700; width: 15%; text-align: left; padding-left: 1.5rem; color: var(--primary-dark); border-right: 1px solid var(--border-color); }
         .detailed-table .binler-bolugu { background-color: var(--binler-boluk-bg); }
         .detailed-table .birler-bolugu { background-color: var(--birler-boluk-bg); }
         .cell-content, .digit-cell-content { font-weight: bold; transition: opacity 0.3s ease; }
         .detailed-table .basamak-degeri .cell-content, .detailed-table .sayi-degeri .cell-content { color: var(--accent-red); font-size: clamp(1rem, 2.5vw, 1.3rem); font-weight: 800; }
+        
+        .detailed-table .cozumleme .cell-content {
+            color: var(--accent-blue);
+            font-size: clamp(0.85rem, 2vw, 1rem);
+            font-weight: 700;
+        }
+
         .detailed-table .okunus .cell-content { color: var(--primary-dark); text-transform: uppercase; font-weight: 700; }
         .digit-control { display: flex; align-items: center; justify-content: center; gap: 10px; }
         .digit-control .digit { font-size: clamp(1.5rem, 4vw, 2.2rem); color: var(--text-color); min-width: 40px; }
@@ -102,7 +126,6 @@
         .visibility-toggle:hover { opacity: 1; }
         .content-hidden .cell-content, .content-hidden .digit-cell-content { opacity: 0; }
 
-        /* Ortak Alt Kısım ve Modal Stilleri */
         .instructions { grid-column: 1 / -1; padding: 1rem; background-color: #eef0fa; border-radius: 1rem; }
         .instructions h2 { text-align: center; margin-bottom: 0.6rem; color: var(--primary); } .instructions ul { list-style-position: inside; padding-left: 0.6rem; } .instructions ul li { margin-bottom: 0.3rem; }
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); justify-content: center; align-items: center; backdrop-filter: blur(5px); }
@@ -165,7 +188,8 @@
             <h2>Detaylı Basamak Tablosu</h2>
             <div class="table-container">
                 <table class="detailed-table" id="detailed-table">
-                    </table>
+                    <tbody id="detailed-table-body"></tbody>
+                </table>
             </div>
         </section>
 
@@ -192,7 +216,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- MERKEZİ STATE (Tüm uygulamanın ortak hafızası) ---
+            // --- STATE & CONSTANTS ---
             const placeNames = ['Yüz Binler', 'On Binler', 'Binler', 'Yüzler', 'Onlar', 'Birler'];
             const placeValues = [100000, 10000, 1000, 100, 10, 1];
             let digits = [1, 2, 3, 4, 5, 6];
@@ -200,7 +224,7 @@
             let selectedDigitIndex = -1;
             let voices = [];
 
-            // --- Tüm DOM Elementleri ---
+            // --- DOM ELEMENTS ---
             const appContainer = document.getElementById('app-container');
             const infoPanel = document.getElementById('info-panel');
             const thousandsGrid = document.getElementById('thousands-grid');
@@ -226,16 +250,16 @@
             const selectedNameEl = document.getElementById('selected-name');
             const selectedPlaceValueEl = document.getElementById('selected-place-value');
             const selectedFaceValueEl = document.getElementById('selected-face-value');
-            const detailedTable = document.getElementById('detailed-table');
+            const detailedTableBody = document.getElementById('detailed-table-body'); // Tablonun body'si hedefleniyor
 
-            // --- ANA GÜNCELLEME FONKSİYONU ---
+            // --- MAIN UPDATE FUNCTION ---
             function updateAllUI() {
                 updateDigitCards();
                 updateInfoPanel();
                 updateDetailedTable();
             }
 
-            // --- GÜNCELLEME YARDIMCI FONKSİYONLARI ---
+            // --- UI UPDATE HELPERS ---
             function updateDigitCards() {
                 document.querySelectorAll('.digit-card').forEach((card, index) => {
                     card.querySelector('.digit').textContent = digits[index];
@@ -287,7 +311,7 @@
                 const thousandsText = (thousandsPart > 0) ? `${numberToTurkish(thousandsPart, true)} BİN` : '';
                 const onesText = (onesPart > 0) ? numberToTurkish(onesPart, true) : (number === 0 ? 'SIFIR' : '');
 
-                let tableHTML = `<tbody>
+                let tableRowsHTML = `
                     <tr><th>Sayı</th>
                         ${digits.map((d, i) => `<td class="${i < 3 ? 'binler-bolugu' : 'birler-bolugu'}"><div class="digit-cell-content"><div class="digit-control"><button class="app-change-btn" data-index="${i}" data-amount="-1">–</button><span class="digit">${d}</span><button class="app-change-btn" data-index="${i}" data-amount="1">+</button></div></div><button class="visibility-toggle">👁️</button></td>`).join('')}
                     </tr>
@@ -301,6 +325,9 @@
                     <tr class="basamak-degeri"><th>Basamak Değeri</th>
                         ${digits.map((d, i) => `<td class="${i < 3 ? 'binler-bolugu' : 'birler-bolugu'}"><span class="cell-content">${(d * placeValues[i]).toLocaleString('tr-TR')}</span><button class="visibility-toggle">👁️</button></td>`).join('')}
                     </tr>
+                    <tr class="cozumleme"><th>Çözümleme</th>
+                        ${digits.map((d, i) => `<td class="${i < 3 ? 'binler-bolugu' : 'birler-bolugu'}"><span class="cell-content">(${d} × ${placeValues[i].toLocaleString('tr-TR')})</span><button class="visibility-toggle">👁️</button></td>`).join('')}
+                    </tr>
                     <tr class="sayi-degeri"><th>Sayı Değeri</th>
                         ${digits.map((d, i) => `<td class="${i < 3 ? 'binler-bolugu' : 'birler-bolugu'}"><span class="cell-content">${d}</span><button class="visibility-toggle">👁️</button></td>`).join('')}
                     </tr>
@@ -308,11 +335,11 @@
                         <td class="binler-bolugu" colspan="3"><span class="cell-content">${thousandsText}</span><button class="visibility-toggle">👁️</button></td>
                         <td class="birler-bolugu" colspan="3"><span class="cell-content">${onesText}</span><button class="visibility-toggle">👁️</button></td>
                     </tr>
-                </tbody>`;
-                detailedTable.innerHTML = tableHTML;
+                `;
+                detailedTableBody.innerHTML = tableRowsHTML;
             }
 
-            // --- OLAY YÖNETİCİLERİ (Event Handlers) ---
+            // --- EVENT HANDLERS & LOGIC ---
             function changeDigit(index, amount) {
                 if (hiddenDigits[index]) return;
                 let newNumber = calculateFullNumber() + (amount * placeValues[index]);
@@ -342,12 +369,12 @@
                 updateAllUI();
             }
 
-            // --- YARDIMCI FONKSİYONLAR ---
+            // --- HELPER FUNCTIONS ---
             const calculateFullNumber = () => digits.reduce((acc, d, i) => acc + d * placeValues[i], 0);
             function numberToTurkish(num, isTable = false) { if (num === 0) return isTable ? '' : 'sıfır'; const o = ["", "bir", "iki", "üç", "dört", "beş", "altı", "yedi", "sekiz", "dokuz"], t = ["", "on", "yirmi", "otuz", "kırk", "elli", "altmış", "yetmiş", "seksen", "doksan"]; const conv = n => { let r = "", h = Math.floor(n / 100), m = Math.floor((n % 100) / 10), l = n % 10; if (h > 0) r += (h > 1 ? o[h] + " " : "") + "yüz "; if (m > 0) r += t[m] + " "; if (l > 0) r += o[l] + " "; return r.trim(); }; const th = Math.floor(num / 1000), r = num % 1000; let res = ""; if (th > 0) res += (th === 1 ? "bin " : conv(th) + " bin "); if (r > 0) res += conv(r); return isTable ? res.toUpperCase() : res; }
             const openModal = (title, content) => { modalTitle.innerHTML = title; expansionResult.innerHTML = ''; if (typeof content === 'string') expansionResult.innerHTML = content; else expansionResult.appendChild(content); modal.style.display = 'flex'; };
             
-            // --- BAŞLANGIÇ FONKSİYONLARI ---
+            // --- INITIALIZATION ---
             function createDigitCards() {
                 thousandsGrid.innerHTML = ''; onesGrid.innerHTML = '';
                 placeNames.forEach((name, index) => {
@@ -378,8 +405,9 @@
                 window.addEventListener('click', (e) => { if (e.target == modal) modal.style.display = 'none'; });
                 document.getElementById('speak-btn').addEventListener('click', () => { const text = document.getElementById('number-text').textContent; if (!text) return; speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = 'tr-TR'; u.rate = 0.8; if (voices.length > 0) u.voice = voices[0]; speechSynthesis.speak(u); });
 
-                // [DÜZELTME] Tablodaki olaylar için event delegation
-                detailedTable.addEventListener('click', (e) => {
+                // Düzeltilmiş Olay Dinleyici (Event Delegation)
+                const tableContainer = document.querySelector('.table-container');
+                tableContainer.addEventListener('click', (e) => {
                     const target = e.target;
                     if (target.matches('.visibility-toggle')) {
                         target.closest('td, th').classList.toggle('content-hidden');
@@ -393,7 +421,7 @@
                 });
             }
 
-            // --- UYGULAMAYI BAŞLAT ---
+            // --- RUN ---
             createDigitCards();
             addEventListeners();
             resetNumber();
